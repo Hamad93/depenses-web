@@ -1,0 +1,100 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Comparaison de mois</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="filter-row">
+      <mat-form-field appearance="outline" class="month-select">
+        <mat-label>Mois a comparer</mat-label>
+        <mat-select multiple [(ngModel)]="selectedIds">
+          @for (month of months(); track month.id) {
+            <mat-option [value]="month.id">
+              {{ month.label }} @if (month.isSimulation) { (simulation) }
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button mat-flat-button color="primary" (click)="compare()">Comparer</button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading">
+        <mat-spinner diameter="36" />
+      </div>
+    }
+    @if (!loading() && result(); as r) {
+      <table mat-table [dataSource]="r.months" class="full-width-table">
+        <ng-container matColumnDef="label">
+          <th mat-header-cell *matHeaderCellDef>Mois</th>
+          <td mat-cell *matCellDef="let m">{{ m.label }}</td>
+        </ng-container>
+        <ng-container matColumnDef="totalRevenu">
+          <th mat-header-cell *matHeaderCellDef>Revenus</th>
+          <td mat-cell *matCellDef="let m">{{ m.totalRevenu | number: '1.2-2' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="totalDepense">
+          <th mat-header-cell *matHeaderCellDef>Depenses</th>
+          <td mat-cell *matCellDef="let m">{{ m.totalDepense | number: '1.2-2' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="diff">
+          <th mat-header-cell *matHeaderCellDef>Solde</th>
+          <td mat-cell *matCellDef="let m" [class.amount-positive]="m.diff >= 0" [class.amount-negative]="m.diff < 0">
+            {{ m.diff | number: '1.2-2' }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="pctDepense">
+          <th mat-header-cell *matHeaderCellDef>% depense</th>
+          <td mat-cell *matCellDef="let m">{{ m.pctDepense | number: '1.0-1' }}%</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="monthColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: monthColumns"></tr>
+      </table>
+
+      @if (r.evolution.length > 0) {
+        <h3 class="section-title">Evolution</h3>
+        <table mat-table [dataSource]="r.evolution" class="full-width-table">
+          <ng-container matColumnDef="periode">
+            <th mat-header-cell *matHeaderCellDef>Periode</th>
+            <td mat-cell *matCellDef="let e">{{ e.de }} → {{ e.vers }}</td>
+          </ng-container>
+          <ng-container matColumnDef="evolutionRevenu">
+            <th mat-header-cell *matHeaderCellDef>Δ Revenus</th>
+            <td
+              mat-cell
+              *matCellDef="let e"
+              [class.amount-positive]="e.evolutionRevenu >= 0"
+              [class.amount-negative]="e.evolutionRevenu < 0"
+            >
+              {{ e.evolutionRevenu | number: '1.2-2' }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="evolutionDepense">
+            <th mat-header-cell *matHeaderCellDef>Δ Depenses</th>
+            <td
+              mat-cell
+              *matCellDef="let e"
+              [class.amount-positive]="e.evolutionDepense <= 0"
+              [class.amount-negative]="e.evolutionDepense > 0"
+            >
+              {{ e.evolutionDepense | number: '1.2-2' }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="evolutionDiff">
+            <th mat-header-cell *matHeaderCellDef>Δ Solde</th>
+            <td
+              mat-cell
+              *matCellDef="let e"
+              [class.amount-positive]="e.evolutionDiff >= 0"
+              [class.amount-negative]="e.evolutionDiff < 0"
+            >
+              {{ e.evolutionDiff | number: '1.2-2' }}
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="evolutionColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: evolutionColumns"></tr>
+        </table>
+      }
+    }
+  </mat-card-content>
+</mat-card>

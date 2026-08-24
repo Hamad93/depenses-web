@@ -1,0 +1,50 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Import Excel</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <p class="hint">Importer un fichier .xlsx contenant un ou plusieurs mois (revenus, depenses, depenses hebdomadaires).</p>
+
+    <div class="dropzone">
+      <mat-icon>upload_file</mat-icon>
+      <span class="file-name">{{ selectedFile()?.name ?? 'Aucun fichier selectionne' }}</span>
+      <button mat-stroked-button type="button" (click)="fileInput.click()">Choisir un fichier</button>
+      <input #fileInput type="file" accept=".xlsx" (change)="onFileSelected($event)" hidden />
+    </div>
+
+    <div class="upload-row">
+      <button mat-flat-button color="primary" [disabled]="!selectedFile() || uploading()" (click)="upload()">
+        @if (uploading()) {
+          <mat-spinner diameter="18" class="inline-spinner" />
+        } @else {
+          <mat-icon>publish</mat-icon>
+        }
+        Importer
+      </button>
+    </div>
+
+    @if (result(); as r) {
+      <h3 class="section-title">Resultat</h3>
+      @if (r.imported.length === 0) {
+        <div class="empty-state">
+          <mat-icon>inbox</mat-icon>
+          <p>Aucun mois importe.</p>
+        </div>
+      } @else {
+        <ul class="result-list">
+          @for (item of r.imported; track item.monthId) {
+            <li>
+              <mat-icon class="result-icon">check_circle</mat-icon>
+              <a [routerLink]="['/months', item.monthId]">{{ item.label }}</a>
+              <span class="result-meta">
+                {{ item.incomes }} revenu(s) &middot; {{ item.expenses }} depense(s) &middot;
+                {{ item.weeklyExpenses }} ligne(s) hebdo
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    }
+  </mat-card-content>
+</mat-card>

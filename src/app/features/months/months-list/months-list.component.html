@@ -1,0 +1,67 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Mois</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="toolbar-row">
+      <mat-slide-toggle [checked]="includeSimulations()" (change)="toggleSimulations()">
+        Afficher les simulations
+      </mat-slide-toggle>
+      <span class="spacer"></span>
+      <button mat-flat-button color="primary" (click)="create()">
+        <mat-icon>add</mat-icon>
+        Nouveau mois
+      </button>
+    </div>
+
+    @if (loading()) {
+      <div class="loading">
+        <mat-spinner diameter="36" />
+      </div>
+    } @else if (months().length === 0) {
+      <div class="empty-state">
+        <mat-icon>calendar_month</mat-icon>
+        <p>Aucun mois pour le moment.</p>
+      </div>
+    } @else {
+      <table mat-table [dataSource]="months()" class="full-width-table">
+        <ng-container matColumnDef="label">
+          <th mat-header-cell *matHeaderCellDef>Libelle</th>
+          <td mat-cell *matCellDef="let month">{{ month.label }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="periode">
+          <th mat-header-cell *matHeaderCellDef>Periode</th>
+          <td mat-cell *matCellDef="let month">{{ month.monthNumber }}/{{ month.year }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef>Type</th>
+          <td mat-cell *matCellDef="let month">
+            @if (month.isSimulation) {
+              <span class="badge">Simulation</span>
+            } @else {
+              <span>Reel</span>
+            }
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let month">
+            <button mat-icon-button matTooltip="Modifier" (click)="edit(month, $event)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Supprimer" color="warn" (click)="remove(month, $event)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns" class="clickable-row" (click)="openMonth(row)"></tr>
+      </table>
+    }
+  </mat-card-content>
+</mat-card>

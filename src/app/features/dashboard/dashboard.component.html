@@ -1,0 +1,180 @@
+<div class="dashboard">
+  <div class="page-header">
+    <h1>Tableau de bord</h1>
+    <p>Vue d'ensemble de vos revenus et depenses par mois.</p>
+  </div>
+
+  <mat-card class="selector-card">
+    <mat-card-content>
+      <div class="selector-row">
+        <mat-form-field appearance="outline" class="month-select">
+          <mat-label>Mois selectionne</mat-label>
+          <mat-select [value]="selectedMonthId()" (selectionChange)="onSelectChange($event.value)">
+            @for (month of sortedMonths(); track month.id) {
+              <mat-option [value]="month.id">
+                {{ month.label }}
+                @if (isCurrent(month)) {
+                  (mois en cours)
+                }
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button [disabled]="!selectedMonthId()" (click)="openDetail()">
+          <mat-icon>open_in_new</mat-icon>
+          Detail complet
+        </button>
+
+        <span class="spacer"></span>
+
+        <button mat-flat-button color="primary" (click)="createMonth()">
+          <mat-icon>add</mat-icon>
+          Nouveau mois
+        </button>
+      </div>
+
+      @if (!loadingMonths() && !hasCurrentMonthEntry()) {
+        <div class="current-month-alert">
+          <mat-icon>info</mat-icon>
+          <span>Aucun mois enregistre pour <strong>{{ currentMonthInfo.label }}</strong> (mois en cours).</span>
+          <button mat-button color="primary" (click)="createMonth(true)">Creer ce mois</button>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  @if (loadingSummary()) {
+    <div class="loading">
+      <mat-spinner diameter="36" />
+    </div>
+  }
+
+  @if (!loadingSummary() && summary(); as s) {
+    <div class="summary-grid">
+      <mat-card class="stat-card positive">
+        <span class="stat-icon"><mat-icon>trending_up</mat-icon></span>
+        <div class="stat-body">
+          <span class="stat-label">Total revenus</span>
+          <span class="stat-value">{{ s.totalRevenu | number: '1.2-2' }}</span>
+        </div>
+      </mat-card>
+      <mat-card class="stat-card negative">
+        <span class="stat-icon"><mat-icon>trending_down</mat-icon></span>
+        <div class="stat-body">
+          <span class="stat-label">Total depenses</span>
+          <span class="stat-value">{{ s.totalDepense | number: '1.2-2' }}</span>
+        </div>
+      </mat-card>
+      <mat-card class="stat-card" [class.positive]="s.diff >= 0" [class.negative]="s.diff < 0">
+        <span class="stat-icon"><mat-icon>account_balance_wallet</mat-icon></span>
+        <div class="stat-body">
+          <span class="stat-label">Solde</span>
+          <span class="stat-value">{{ s.diff | number: '1.2-2' }}</span>
+        </div>
+      </mat-card>
+      <mat-card class="stat-card neutral">
+        <span class="stat-icon"><mat-icon>percent</mat-icon></span>
+        <div class="stat-body">
+          <span class="stat-label">% depense / revenu</span>
+          <span class="stat-value">{{ s.pctDepense | number: '1.0-1' }}%</span>
+        </div>
+      </mat-card>
+    </div>
+
+    <div class="breakdown-grid">
+      <mat-card>
+        <mat-card-header><mat-card-title>Par categorie</mat-card-title></mat-card-header>
+        <mat-card-content>
+          @if (s.parCategorie.length === 0) {
+            <p class="empty">Aucune donnee</p>
+          }
+          @for (entry of s.parCategorie; track entry.label) {
+            <div class="breakdown-row">
+              <div class="breakdown-label">
+                <span>{{ entry.label }}</span>
+                <span class="breakdown-pct">{{ entry.pourcentage }}%</span>
+              </div>
+              <div class="breakdown-bar">
+                <div class="breakdown-bar-fill" [style.width.%]="entry.pourcentage"></div>
+              </div>
+              <span class="breakdown-amount">{{ entry.total | number: '1.2-2' }}</span>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card>
+        <mat-card-header><mat-card-title>Par localisation</mat-card-title></mat-card-header>
+        <mat-card-content>
+          @if (s.parLocalisation.length === 0) {
+            <p class="empty">Aucune donnee</p>
+          }
+          @for (entry of s.parLocalisation; track entry.label) {
+            <div class="breakdown-row">
+              <div class="breakdown-label">
+                <span>{{ entry.label }}</span>
+                <span class="breakdown-pct">{{ entry.pourcentage }}%</span>
+              </div>
+              <div class="breakdown-bar">
+                <div class="breakdown-bar-fill" [style.width.%]="entry.pourcentage"></div>
+              </div>
+              <span class="breakdown-amount">{{ entry.total | number: '1.2-2' }}</span>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+  }
+
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Historique des mois</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @if (loadingMonths()) {
+        <div class="loading">
+          <mat-spinner diameter="36" />
+        </div>
+      } @else if (sortedMonths().length === 0) {
+        <div class="empty-state">
+          <mat-icon>calendar_month</mat-icon>
+          <p>Aucun mois enregistre pour le moment.</p>
+        </div>
+      } @else {
+        <table mat-table [dataSource]="sortedMonths()" class="full-width-table">
+          <ng-container matColumnDef="label">
+            <th mat-header-cell *matHeaderCellDef>Mois</th>
+            <td mat-cell *matCellDef="let m">
+              {{ m.label }}
+              @if (isCurrent(m)) {
+                <span class="badge current">En cours</span>
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="periode">
+            <th mat-header-cell *matHeaderCellDef>Periode</th>
+            <td mat-cell *matCellDef="let m">{{ m.monthNumber }}/{{ m.year }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let m">
+              <button mat-button color="primary" (click)="selectMonth(m.id)">Selectionner</button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="tableColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: tableColumns"
+            class="clickable-row"
+            [class.selected-row]="row.id === selectedMonthId()"
+            (click)="selectMonth(row.id)"
+          ></tr>
+        </table>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

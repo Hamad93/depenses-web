@@ -1,0 +1,137 @@
+/* You can add global styles to this file, and also import other style files */
+
+:root {
+  --color-bg: #f3f5fb;
+  --color-surface: #ffffff;
+  --color-border: #e7e9f2;
+  --color-primary: #005cbb;
+  --color-primary-tint: #e8f1fd;
+  --color-success: #17864f;
+  --color-success-tint: #e6f6ee;
+  --color-danger: #d02b20;
+  --color-danger-tint: #fdeceb;
+  --color-warning: #a16207;
+  --color-warning-tint: #fef6e6;
+  --color-text: #1a1b1f;
+  --color-text-secondary: #63666f;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 2px rgba(20, 24, 41, 0.06), 0 1px 1px rgba(20, 24, 41, 0.04);
+  --shadow-md: 0 8px 24px rgba(20, 24, 41, 0.08);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9cddb;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.full-width {
+  width: 100%;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Cards */
+.mat-mdc-card {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface) !important;
+  margin-bottom: 20px;
+}
+
+.mat-mdc-card-header {
+  padding-bottom: 4px !important;
+}
+
+.mat-mdc-card-title {
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+}
+
+/* Buttons */
+.mat-mdc-unelevated-button,
+.mat-mdc-raised-button,
+.mat-mdc-outlined-button {
+  border-radius: var(--radius-sm) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+}
+
+/* Tables */
+.mat-mdc-table {
+  background: #ffffff !important;
+}
+
+.mat-mdc-header-row,
+.mat-mdc-row,
+.mat-mdc-footer-row {
+  background: #ffffff !important;
+}
+
+.mat-mdc-header-cell {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary) !important;
+  border-bottom-color: var(--color-border) !important;
+}
+
+.mat-mdc-cell,
+.mat-mdc-footer-cell {
+  border-bottom-color: var(--color-border) !important;
+  font-size: 14px;
+}
+
+.mat-mdc-row:last-child .mat-mdc-cell {
+  border-bottom: none !important;
+}
+
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 16px;
+  color: var(--color-text-secondary);
+  text-align: center;
+
+  mat-icon {
+    font-size: 36px;
+    height: 36px;
+    width: 36px;
+    opacity: 0.5;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}

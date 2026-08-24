@@ -1,0 +1,54 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier le revenu' : 'Nouveau revenu' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-dialog-content>
+    <div class="form-grid">
+      <mat-form-field appearance="outline" class="full-width span-2">
+        <mat-label>Libelle</mat-label>
+        <mat-select formControlName="libelle">
+          @for (option of libelleOptions; track option) {
+            <mat-option [value]="option">{{ option }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.libelle.hasError('required')) {
+          <mat-error>Le libelle est requis</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Quantite</mat-label>
+        <input matInput type="number" step="0.01" formControlName="quantite" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Type</mat-label>
+        <mat-select formControlName="type">
+          <mat-option value="fixe">Fixe</mat-option>
+          <mat-option value="variable">Variable</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Montant unitaire</mat-label>
+        <input matInput type="number" step="0.01" formControlName="montant" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Date</mat-label>
+        <input matInput [matDatepicker]="datePicker" formControlName="date" />
+        <mat-datepicker-toggle matIconSuffix [for]="datePicker"></mat-datepicker-toggle>
+        <mat-datepicker #datePicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width span-2">
+        <mat-label>Description</mat-label>
+        <textarea matInput formControlName="description" rows="3" placeholder="Details, notes..."></textarea>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancel()">Annuler</button>
+    <button mat-flat-button color="primary" type="submit">Enregistrer</button>
+  </mat-dialog-actions>
+</form>

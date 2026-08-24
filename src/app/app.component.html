@@ -1,0 +1,29 @@
+<mat-toolbar class="toolbar">
+  <div class="brand">
+    <span class="brand-icon"><mat-icon>account_balance_wallet</mat-icon></span>
+    <span class="title">{{ title }}</span>
+  </div>
+  <span class="spacer"></span>
+  <nav class="nav-links">
+    <a routerLink="/" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+      <mat-icon>dashboard</mat-icon>
+      Tableau de bord
+    </a>
+    <a routerLink="/months" routerLinkActive="active-link">
+      <mat-icon>calendar_month</mat-icon>
+      Gerer les mois
+    </a>
+    <a routerLink="/stats" routerLinkActive="active-link">
+      <mat-icon>bar_chart</mat-icon>
+      Comparaison
+    </a>
+    <a routerLink="/import" routerLinkActive="active-link">
+      <mat-icon>upload_file</mat-icon>
+      Import
+    </a>
+  </nav>
+</mat-toolbar>
+
+<main class="content">
+  <router-outlet />
+</main>

@@ -1,0 +1,241 @@
+@if (loading()) {
+  <div class="loading">
+    <mat-spinner diameter="36" />
+  </div>
+}
+@if (!loading() && month(); as m) {
+  <div class="header-row">
+    <button mat-icon-button (click)="back()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1>{{ m.label }}</h1>
+    @if (m.isSimulation) {
+      <span class="badge">Simulation</span>
+    }
+  </div>
+
+  <mat-tab-group>
+    <mat-tab label="Resume">
+      @if (summary(); as s) {
+        <div class="summary-grid">
+          <mat-card class="stat-card positive">
+            <span class="stat-icon"><mat-icon>trending_up</mat-icon></span>
+            <div class="stat-body">
+              <span class="stat-label">Total revenus</span>
+              <span class="stat-value">{{ s.totalRevenu | number: '1.2-2' }}</span>
+            </div>
+          </mat-card>
+          <mat-card class="stat-card negative">
+            <span class="stat-icon"><mat-icon>trending_down</mat-icon></span>
+            <div class="stat-body">
+              <span class="stat-label">Total depenses</span>
+              <span class="stat-value">{{ s.totalDepense | number: '1.2-2' }}</span>
+            </div>
+          </mat-card>
+          <mat-card class="stat-card" [class.positive]="s.diff >= 0" [class.negative]="s.diff < 0">
+            <span class="stat-icon"><mat-icon>account_balance_wallet</mat-icon></span>
+            <div class="stat-body">
+              <span class="stat-label">Solde</span>
+              <span class="stat-value">{{ s.diff | number: '1.2-2' }}</span>
+            </div>
+          </mat-card>
+          <mat-card class="stat-card neutral">
+            <span class="stat-icon"><mat-icon>percent</mat-icon></span>
+            <div class="stat-body">
+              <span class="stat-label">% depense / revenu</span>
+              <span class="stat-value">{{ s.pctDepense | number: '1.0-1' }}%</span>
+            </div>
+          </mat-card>
+        </div>
+
+        <div class="breakdown-grid">
+          <mat-card>
+            <mat-card-header><mat-card-title>Par categorie</mat-card-title></mat-card-header>
+            <mat-card-content>
+              @if (s.parCategorie.length === 0) {
+                <p class="empty">Aucune donnee</p>
+              }
+              @for (entry of s.parCategorie; track entry.label) {
+                <div class="breakdown-row">
+                  <div class="breakdown-label">
+                    <span>{{ entry.label }}</span>
+                    <span class="breakdown-pct">{{ entry.pourcentage }}%</span>
+                  </div>
+                  <div class="breakdown-bar">
+                    <div class="breakdown-bar-fill" [style.width.%]="entry.pourcentage"></div>
+                  </div>
+                  <span class="breakdown-amount">{{ entry.total | number: '1.2-2' }}</span>
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card>
+            <mat-card-header><mat-card-title>Par localisation</mat-card-title></mat-card-header>
+            <mat-card-content>
+              @if (s.parLocalisation.length === 0) {
+                <p class="empty">Aucune donnee</p>
+              }
+              @for (entry of s.parLocalisation; track entry.label) {
+                <div class="breakdown-row">
+                  <div class="breakdown-label">
+                    <span>{{ entry.label }}</span>
+                    <span class="breakdown-pct">{{ entry.pourcentage }}%</span>
+                  </div>
+                  <div class="breakdown-bar">
+                    <div class="breakdown-bar-fill" [style.width.%]="entry.pourcentage"></div>
+                  </div>
+                  <span class="breakdown-amount">{{ entry.total | number: '1.2-2' }}</span>
+                </div>
+              }
+            </mat-card-content>
+          </mat-card>
+        </div>
+      }
+    </mat-tab>
+
+    <mat-tab label="Revenus">
+      <div class="tab-toolbar">
+        <button mat-flat-button color="primary" (click)="addIncome()">
+          <mat-icon>add</mat-icon>
+          Ajouter un revenu
+        </button>
+      </div>
+
+      @if (m.incomes.length === 0) {
+        <div class="empty-state">
+          <mat-icon>payments</mat-icon>
+          <p>Aucun revenu pour ce mois.</p>
+        </div>
+      } @else {
+        <table mat-table [dataSource]="m.incomes" class="full-width-table lively-table">
+          <ng-container matColumnDef="libelle">
+            <th mat-header-cell *matHeaderCellDef>Libelle</th>
+            <td mat-cell *matCellDef="let item">
+              <div class="libelle-cell">
+                <span class="row-avatar success">{{ item.libelle.charAt(0) }}</span>
+                <span class="row-title">{{ item.libelle }}</span>
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="quantite">
+            <th mat-header-cell *matHeaderCellDef>Qte</th>
+            <td mat-cell *matCellDef="let item">{{ item.quantite }}</td>
+          </ng-container>
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let item">
+              <span class="chip" [class.chip-variable]="item.type === 'variable'">{{ item.type }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="montant">
+            <th mat-header-cell *matHeaderCellDef>Montant unit.</th>
+            <td mat-cell *matCellDef="let item">{{ item.montant | number: '1.2-2' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef>Total</th>
+            <td mat-cell *matCellDef="let item" class="amount-cell amount-positive">{{ item.total | number: '1.2-2' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let item">
+              <button mat-icon-button matTooltip="Details" (click)="viewIncomeDetails(item)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button matTooltip="Modifier" (click)="editIncome(item)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button matTooltip="Supprimer" color="warn" (click)="removeIncome(item)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="incomeColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: incomeColumns"></tr>
+        </table>
+      }
+    </mat-tab>
+
+    <mat-tab label="Depenses">
+      <div class="tab-toolbar">
+        <button mat-flat-button color="primary" (click)="addExpense()">
+          <mat-icon>add</mat-icon>
+          Ajouter une depense
+        </button>
+      </div>
+
+      @if (m.expenses.length === 0) {
+        <div class="empty-state">
+          <mat-icon>receipt_long</mat-icon>
+          <p>Aucune depense pour ce mois.</p>
+        </div>
+      } @else {
+        <table mat-table [dataSource]="m.expenses" class="full-width-table lively-table">
+          <ng-container matColumnDef="libelle">
+            <th mat-header-cell *matHeaderCellDef>Libelle</th>
+            <td mat-cell *matCellDef="let item">
+              <div class="libelle-cell">
+                <span class="row-avatar danger">{{ item.libelle.charAt(0) }}</span>
+                <span class="row-title">{{ item.libelle }}</span>
+              </div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="quantite">
+            <th mat-header-cell *matHeaderCellDef>Qte</th>
+            <td mat-cell *matCellDef="let item">{{ item.quantite }}</td>
+          </ng-container>
+          <ng-container matColumnDef="type">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let item">
+              <span class="chip" [class.chip-variable]="item.type === 'variable'">{{ item.type }}</span>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="montant">
+            <th mat-header-cell *matHeaderCellDef>Montant unit.</th>
+            <td mat-cell *matCellDef="let item">{{ item.montant | number: '1.2-2' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="total">
+            <th mat-header-cell *matHeaderCellDef>Total</th>
+            <td mat-cell *matCellDef="let item" class="amount-cell amount-negative">{{ item.total | number: '1.2-2' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="categorie">
+            <th mat-header-cell *matHeaderCellDef>Categorie</th>
+            <td mat-cell *matCellDef="let item">
+              @if (item.categorie) {
+                <span class="chip chip-outline">{{ item.categorie }}</span>
+              } @else {
+                <span class="chip-empty">&mdash;</span>
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="localisation">
+            <th mat-header-cell *matHeaderCellDef>Localisation</th>
+            <td mat-cell *matCellDef="let item">
+              @if (item.localisation) {
+                <span class="chip chip-outline">{{ item.localisation }}</span>
+              } @else {
+                <span class="chip-empty">&mdash;</span>
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let item">
+              <button mat-icon-button matTooltip="Details" (click)="viewExpenseDetails(item)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button matTooltip="Modifier" (click)="editExpense(item)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button matTooltip="Supprimer" color="warn" (click)="removeExpense(item)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="expenseColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: expenseColumns"></tr>
+        </table>
+      }
+    </mat-tab>
+  </mat-tab-group>
+}
