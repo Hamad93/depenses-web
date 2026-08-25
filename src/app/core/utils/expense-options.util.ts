@@ -17,7 +17,6 @@ export const EXPENSE_LIBELLE_OPTIONS = [
   'Ecobank',
   'Dette',
   'Credit',
-  'Autre depense',
 ];
 
 export const EXPENSE_CATEGORIE_OPTIONS = ['Habitation', 'Transport', 'Ration', 'Autre'];
