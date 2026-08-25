@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -6,12 +6,9 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { CreateExpenseDto, Expense } from '../../../core/models';
-import {
-  EXPENSE_CATEGORIE_OPTIONS,
-  EXPENSE_LIBELLE_OPTIONS,
-  EXPENSE_LOCALISATION_OPTIONS,
-} from '../../../core/utils/expense-options.util';
+import { CreateExpenseDto, Expense, ExpenseLibelle } from '../../../core/models';
+import { ExpenseLibellesService } from '../../../core/services/expense-libelles.service';
+import { EXPENSE_LOCALISATION_OPTIONS } from '../../../core/utils/expense-options.util';
 
 export interface ExpenseFormDialogData {
   expense?: Expense;
@@ -39,12 +36,15 @@ function withExisting(options: string[], existing: string | null | undefined): s
 export class ExpenseFormDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<ExpenseFormDialogComponent>);
+  private readonly libellesService = inject(ExpenseLibellesService);
   readonly data = inject<ExpenseFormDialogData>(MAT_DIALOG_DATA);
 
   readonly isEdit = !!this.data?.expense;
 
-  readonly libelleOptions = withExisting(EXPENSE_LIBELLE_OPTIONS, this.data?.expense?.libelle);
-  readonly categorieOptions = withExisting(EXPENSE_CATEGORIE_OPTIONS, this.data?.expense?.categorie);
+  readonly libelles = signal<ExpenseLibelle[]>([]);
+  readonly libelleOptions = signal<string[]>(
+    withExisting([], this.data?.expense?.libelle),
+  );
   readonly localisationOptions = withExisting(EXPENSE_LOCALISATION_OPTIONS, this.data?.expense?.localisation);
 
   readonly form = this.fb.nonNullable.group({
@@ -53,10 +53,24 @@ export class ExpenseFormDialogComponent {
     type: [this.data?.expense?.type ?? 'fixe', [Validators.required]],
     montant: [this.data?.expense?.montant ?? 0, [Validators.required]],
     date: [this.data?.expense?.date ? new Date(this.data.expense.date) : new Date(), [Validators.required]],
-    categorie: [this.data?.expense?.categorie ?? ''],
+    categorie: [{ value: this.data?.expense?.categorie ?? '', disabled: true }],
     localisation: [this.data?.expense?.localisation ?? ''],
     description: [this.data?.expense?.description ?? ''],
   });
+
+  constructor() {
+    this.libellesService.findAll().subscribe({
+      next: (libelles) => {
+        this.libelles.set(libelles);
+        this.libelleOptions.set(withExisting(libelles.map((l) => l.label), this.data?.expense?.libelle));
+      },
+    });
+
+    this.form.controls.libelle.valueChanges.subscribe((label) => {
+      const matched = this.libelles().find((l) => l.label === label);
+      this.form.controls.categorie.setValue(matched?.category.label ?? '');
+    });
+  }
 
   save(): void {
     if (this.form.invalid) {

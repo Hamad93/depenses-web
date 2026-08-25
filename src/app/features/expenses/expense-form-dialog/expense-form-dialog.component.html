@@ -6,7 +6,7 @@
       <mat-form-field appearance="outline" class="full-width span-2">
         <mat-label>Libelle</mat-label>
         <mat-select formControlName="libelle">
-          @for (option of libelleOptions; track option) {
+          @for (option of libelleOptions(); track option) {
             <mat-option [value]="option">{{ option }}</mat-option>
           }
         </mat-select>
@@ -42,11 +42,8 @@
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Categorie</mat-label>
-        <mat-select formControlName="categorie">
-          @for (option of categorieOptions; track option) {
-            <mat-option [value]="option">{{ option }}</mat-option>
-          }
-        </mat-select>
+        <input matInput formControlName="categorie" placeholder="Deduite du libelle" />
+        <mat-hint>Deduite automatiquement du libelle choisi</mat-hint>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
